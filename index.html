@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ミニバス配車">
+<title>ミニバス配車・交通費管理</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f7f7f7;color:#222}
+header{background:#171717;color:white;text-align:center;padding:18px;font-size:20px;font-weight:bold}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:white;padding:6px;position:sticky;top:0}
+nav button{border:0;border-radius:10px;padding:11px 2px;font-weight:bold}
+nav .on{background:#e83e8c;color:white}
+main{max-width:700px;margin:auto;padding:12px}.page{display:none}.page.on{display:block}
+.card{background:white;border:1px solid #ddd;border-radius:15px;padding:15px;margin-bottom:12px}
+h2{font-size:18px;margin-top:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:13px;font-weight:bold;display:block;margin-bottom:5px}
+input,select{width:100%;height:46px;border:1px solid #ccc;border-radius:10px;padding:8px;font-size:16px;background:white}
+.full{grid-column:1/-1}.btn{width:100%;height:48px;border:0;border-radius:12px;background:#e83e8c;color:white;font-weight:bold;margin-top:12px}
+.statbox{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#f5f5f5;border-radius:12px;padding:12px}.stat small{display:block;color:#666}.stat b{font-size:20px}
+.total{background:#ffe5f0;border-radius:12px;padding:12px;margin-top:10px;font-weight:bold}
+.item{border:1px solid #ddd;border-radius:12px;padding:12px;margin-top:9px}.item small{color:#666;line-height:1.6}
+.actions{display:flex;gap:7px;margin-top:8px}.actions button{flex:1;height:40px;border-radius:9px;border:1px solid #ccc;background:white}
+.red{color:#b00020}.pink{color:#c21867}
+.note{font-size:12px;color:#666;line-height:1.6}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+
+<header>🏀 ミニバス配車・交通費管理</header>
+
+<nav>
+<button class="on" onclick="page('input',this)">配車入力</button>
+<button onclick="page('person',this)">個人別</button>
+<button onclick="page('all',this)">全体集計</button>
+<button onclick="page('set',this)">設定</button>
+</nav>
+
+<main>
+
+<section id="input" class="page on">
+<div class="card">
+<h2>🚗 配車を登録</h2>
+<div class="grid">
+<div><label>日付</label><input id="date" type="date"></div>
+<div><label>コーチ・監督</label><select id="member"></select></div>
+<div class="full"><label>行き先</label><input id="dest" placeholder="例：○○小学校"></div>
+<div><label>走行距離（km）</label><input id="dist" type="number" step=".1"></div>
+<div><label>高速道路</label><select id="express"><option>なし</option><option>あり</option></select></div>
+<div><label>高速料金（円）</label><input id="toll" type="number" value="0"></div>
+<div><label>ガソリン年度</label><select id="fuel"></select></div>
+<div><label>燃費（km/L）</label><input id="eff" type="number" value="10" step=".1"></div>
+</div>
+<div class="total" id="calc">ガソリン代 0円 ＋ 高速料金 0円 ＝ 合計 0円</div>
+<button class="btn" onclick="add()">保存する</button>
+</div>
+</section>
+
+<section id="person" class="page">
+<div class="card">
+<h2>👤 個人別集計</h2>
+<select id="pf" onchange="render()"></select>
+<div class="statbox" style="margin-top:10px">
+<div class="stat">配車回数<br><b id="pc">0回</b></div>
+<div class="stat">走行距離<br><b id="pk">0km</b></div>
+<div class="stat">ガソリン代<br><b id="pg">0円</b></div>
+<div class="stat">高速料金<br><b id="pt">0円</b></div>
+</div>
+<div class="total" id="ps">交通費合計 0円</div>
+</div>
+<div class="card"><h2>過去データ</h2><div id="pr"></div></div>
+</section>
+
+<section id="all" class="page">
+<div class="card">
+<h2>📊 全体集計</h2>
+<div class="statbox">
+<div class="stat">配車回数<br><b id="ac">0回</b></div>
+<div class="stat">総走行距離<br><b id="ak">0km</b></div>
+<div class="stat">ガソリン代<br><b id="ag">0円</b></div>
+<div class="stat">高速料金<br><b id="at">0円</b></div>
+</div>
+<div class="total" id="as">全体交通費 0円</div>
+</div>
+<div class="card"><h2>全員の履歴</h2><div id="ar"></div></div>
+</section>
+
+<section id="set" class="page">
+<div class="card">
+<h2>⚙️ コーチ・監督</h2>
+<input id="newm" placeholder="名前を入力">
+<button class="btn" onclick="addMember()">名前を追加</button>
+<div id="ml"></div>
+</div>
+
+<div class="card">
+<h2>⛽ ガソリン単価</h2>
+<div class="grid">
+<input id="fy" placeholder="2026年度">
+<input id="fp" type="number" placeholder="170">
+</div>
+<button class="btn" onclick="addFuel()">年度単価を追加</button>
+<div id="fl"></div>
+</div>
+
+<div class="card">
+<h2>💾 データ</h2>
+<button class="btn" onclick="backup()">バックアップを書き出す</button>
+<button class="btn" onclick="document.getElementById('imp').click()">バックアップを読み込む</button>
+<input id="imp" type="file" accept=".json" hidden onchange="restore(event)">
+<p class="note">機種変更などの前にバックアップしておくと安心です。</p>
+</div>
+</section>
+
+</main>
+
+<script>
+const KEY="minibasket_transport_v1";
+let s=JSON.parse(localStorage.getItem(KEY)||"null")||{
+members:["コーチA","コーチB","監督"],
+fuels:[{year:"2026年度",price:170},{year:"2025年度",price:165}],
+records:[]
+};
+const $=x=>document.getElementById(x);
+const yen=n=>Math.round(n||0).toLocaleString()+"円";
+const gas=(d,e,p)=>Math.round((d||0)/(e||1)*(p||0));
+
+function save(){localStorage.setItem(KEY,JSON.stringify(s))}
+function page(id,b){
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
+$(id).classList.add("on");b.classList.add("on");render()
+}
+function selects(){
+$("member").innerHTML=s.members.map((x,i)=>`<option value="${i}">${x}</option>`).join("");
+$("pf").innerHTML='<option value="all">全員</option>'+s.members.map((x,i)=>`<option value="${i}">${x}</option>`).join("");
+$("fuel").innerHTML=s.fuels.map((x,i)=>`<option value="${i}">${x.year}：${x.price}円/L</option>`).join("");
+}
+function update(){
+let f=s.fuels[$("fuel").value||0],g=gas(+$("dist").value,+$("eff").value,f?.price);
+let t=+$("toll").value||0;
+$("calc").textContent=`ガソリン代 ${yen(g)} ＋ 高速料金 ${yen(t)} ＝ 合計 ${yen(g+t)}`;
+}
+["dist","eff","toll","fuel"].forEach(x=>$(x).addEventListener("input",update));
+
+function add(){
+let f=s.fuels[$("fuel").value||0],d=+$("dist").value||0,t=+$("toll").value||0;
+if(!$("dest").value||!d){alert("行き先と走行距離を入力してください");return}
+s.records.unshift({
+id:Date.now(),date:$("date").value,member:+$("member").value,
+dest:$("dest").value,distance:d,express:$("express").value,toll:t,
+fuelYear:f.year,fuelPrice:f.price,eff:+$("eff").value||10,
+fuel:gas(d,+$("eff").value,f.price)
+});
+save();$("dest").value="";$("dist").value="";$("toll").value=0;
+alert("保存しました");render();update()
+}
+
+function totals(a){
+return{
+c:a.length,
+k:a.reduce((x,r)=>x+r.distance,0),
+g:a.reduce((x,r)=>x+r.fuel,0),
+t:a.reduce((x,r)=>x+r.toll,0)
+}}
+function item(r){
+return `<div class="item"><b>${s.members[r.member]||"不明"} → ${r.dest}</b><br>
+<small>${r.date} ｜ ${r.distance}km ｜ 高速：${r.express}<br>
+ガソリン ${yen(r.fuel)}（${r.fuelYear} ${r.fuelPrice}円/L）<br>
+高速 ${yen(r.toll)}<br>合計 <b>${yen(r.fuel+r.toll)}</b></small>
+<div class="actions">
+<button class="pink" onclick="edit(${r.id})">✏️ 編集</button>
+<button class="red" onclick="del(${r.id})">🗑 削除</button>
+</div></div>`
+}
+function render(){
+selects();
+let a=s.records,t=totals(a);
+$("ac").textContent=t.c+"回";$("ak").textContent=t.k+"km";
+$("ag").textContent=yen(t.g);$("at").textContent=yen(t.t);$("as").textContent="全体交通費 "+yen(t.g+t.t);
+$("ar").innerHTML=a.length?a.map(item).join(""):"まだ記録がありません。";
+
+let v=$("pf").value||"all";
+let p=v==="all"?a:a.filter(r=>String(r.member)===v),q=totals(p);
+$("pc").textContent=q.c+"回";$("pk").textContent=q.k+"km";
+$("pg").textContent=yen(q.g);$("pt").textContent=yen(q.t);$("ps").textContent="交通費合計 "+yen(q.g+q.t);
+$("pr").innerHTML=p.length?p.map(item).join(""):"該当データがありません。";
+
+$("ml").innerHTML=s.members.map((x,i)=>`<div class="item"><b>${x}</b><div class="actions"><button onclick="rename(${i})">名前を編集</button><button class="red" onclick="removeM(${i})">削除</button></div></div>`).join("");
+$("fl").innerHTML=s.fuels.map((x,i)=>`<div class="item"><b>${x.year}</b>：${x.price}円/L<div class="actions"><button onclick="editFuel(${i})">単価を編集</button><button class="red" onclick="removeFuel(${i})">削除</button></div></div>`).join("");
+}
+function edit(id){
+let r=s.records.find(x=>x.id===id);
+$("date").value=r.date;$("member").value=r.member;$("dest").value=r.dest;
+$("dist").value=r.distance;$("express").value=r.express;$("toll").value=r.toll;
+$("eff").value=r.eff;
+s.records=s.records.filter(x=>x.id!==id);save();
+document.querySelector("nav button").click();update();
+}
+function del(id){
+if(confirm("この記録を削除しますか？")){s.records=s.records.filter(x=>x.id!==id);save();render()}
+}
+function addMember(){
+let x=$("newm").value.trim();if(!x)return;
+s.members.push(x);$("newm").value="";save();render()
+}
+function rename(i){
+let x=prompt("名前を変更",s.members[i]);
+if(x?.trim()){s.members[i]=x.trim();save();render()}
+}
+function removeM(i){
+if(s.records.some(r=>r.member===i)){alert("履歴があるため削除できません。名前を変更してください。");return}
+if(confirm("削除しますか？")){s.members.splice(i,1);s.records.forEach(r=>{if(r.member>i)r.member--});save();render()}
+}
+function addFuel(){
+let y=$("fy").value.trim(),p=+$("fp").value;
+if(!y||p<0){alert("年度と単価を入力してください");return}
+s.fuels.push({year:y,price:p});$("fy").value="";$("fp").value="";save();render()
+}
+function editFuel(i){
+let p=prompt("ガソリン単価（円/L）",s.fuels[i].price);
+if(p!==null&&!isNaN(p)&&+p>=0){s.fuels[i].price=+p;save();render()}
+}
+function removeFuel(i){
+if(confirm("削除しますか？")){s.fuels.splice(i,1);if(!s.fuels.length)s.fuels.push({year:"2026年度",price:170});save();render()}
+}
+function backup(){
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([JSON.stringify(s)],{type:"application/json"}));
+a.download="ミニバス配車バックアップ.json";a.click()
+}
+function restore(e){
+let f=e.target.files[0];if(!f)return;
+let r=new FileReader();
+r.onload=()=>{try{s=JSON.parse(r.result);save();render();alert("読み込みました")}catch{alert("読み込みできません")}};
+r.readAsText(f)
+}
+$("date").value=new Date().toISOString().slice(0,10);
+selects();render();update();
+</script>
+</body>
+</html>
