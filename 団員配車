@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- saved from url=(0161)file:///C:/Users/bonbo/AppData/Local/Temp/696763d2-522f-4974-bf6e-50b78e9b8ff3_minibus_trip_manager_v3_pink_black.zip.ff3/minibus_trip_manager_v3_pink_black.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ff2d87"><title>ミニバス 配車管理 V3</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:#f2f2f2;color:#111111}
+header{background:linear-gradient(135deg,#111111 0%,#111111 58%,#ff2d87 100%);color:white;padding:20px 16px 18px;position:sticky;top:0;z-index:5}h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;opacity:.9}
+main{max-width:760px;margin:auto;padding:14px 14px 90px}.card{background:white;border-radius:16px;border-top:3px solid #ff2d87;padding:16px;margin:12px 0;box-shadow:0 2px 12px #11111112}
+.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.nav button,.btn{border:0;border-radius:12px;padding:12px;font-weight:700;background:#fbe4ef;color:#c21868}.nav button.active{background:#111111;color:#ff7eb5;box-shadow:inset 0 0 0 2px #ff2d87}
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}input,select{width:100%;padding:12px;border:1px solid #d8d8d8;border-radius:10px;font-size:16px;background:#fff}
+.primary{background:linear-gradient(135deg,#ff2d87,#e91e73);color:#fff!important;width:100%;margin-top:16px}.danger{background:#ffe1e9;color:#c2185b}.edit{background:#ffe8f2;color:#c21868}.muted{color:#666666;font-size:12px}
+.members{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.member{border:1px solid #d8d8d8;border-radius:10px;padding:11px;background:#fff;display:flex;gap:8px;align-items:center;font-weight:600}.member input{width:auto}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#ffe8f2;border-radius:14px;padding:14px}.stat b{font-size:24px;display:block}.stat span{font-size:12px;color:#5d5d5d}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.history{border-top:1px solid #e9e9e9;padding-top:12px;margin-top:12px}.pill{font-size:11px;background:#eeeeee;padding:4px 8px;border-radius:999px}.hidden{display:none}.empty{text-align:center;color:#777777;padding:24px}
+.actions{display:flex;gap:7px;margin-top:9px}.actions button{flex:1;border:0;border-radius:9px;padding:9px;font-weight:700}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111111;color:#fff;padding:11px 16px;border-radius:999px;display:none;z-index:20;font-size:13px}
+.modal{position:fixed;inset:0;background:#11111199;display:none;align-items:flex-end;justify-content:center;z-index:10}.modal.open{display:flex}.sheet{background:white;width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px 28px}.sheet h2{margin-top:0}
+</style>
+</head>
+<body>
+<header><h1>🏀 ミニバス 配車管理 V3</h1><div class="sub">まとめて登録・自動集計・後から編集</div></header>
+<main>
+<div class="nav">
+<button class="active" onclick="show(&#39;register&#39;,this)">配車登録</button>
+<button onclick="show(&#39;summary&#39;,this)" class="">団員別集計</button>
+<button onclick="show(&#39;members&#39;,this)" class="">団員管理</button>
+</div>
+
+<section id="register" class="">
+<div class="card">
+<h2 id="formTitle">配車をまとめて登録</h2>
+<label>日付</label><input id="date" type="date">
+<label>行き先</label><input id="place" placeholder="例：○○体育館">
+<label>往復距離（km）</label><input id="distance" type="number" min="0" step="0.1" placeholder="例：32">
+<label>配車担当者を選択</label><div id="memberChecks" class="members"><label class="member"><input type="checkbox" value="西濱"> 西濱</label><label class="member"><input type="checkbox" value="小澤"> 小澤</label><label class="member"><input type="checkbox" value="竹内"> 竹内</label><label class="member"><input type="checkbox" value="粉川"> 粉川</label><label class="member"><input type="checkbox" value="山口"> 山口</label><label class="member"><input type="checkbox" value="藤本"> 藤本</label><label class="member"><input type="checkbox" value="萩"> 萩</label><label class="member"><input type="checkbox" value="中田"> 中田</label><label class="member"><input type="checkbox" value="西田"> 西田</label><label class="member"><input type="checkbox" value="伊丹"> 伊丹</label><label class="member"><input type="checkbox" value="高木"> 高木</label><label class="member"><input type="checkbox" value="鈴木"> 鈴木</label><label class="member"><input type="checkbox" value="加藤"> 加藤</label><label class="member"><input type="checkbox" value="舘"> 舘</label><label class="member"><input type="checkbox" value="長沼"> 長沼</label></div>
+<button class="btn primary" onclick="addTrip()">選択した団員をまとめて登録</button>
+</div>
+<div class="card"><h3>登録済みの配車</h3><div id="recent"><div class="history"><div class="row"><b>2026/08/11　サンアリーナ</b><span>5555km</span></div><div class="muted">竹内、山口、西田、伊丹</div><div class="actions"><button class="edit" onclick="openEdit(1787355202447)">編集</button><button class="danger" onclick="deleteTrip(1787355202447)">削除</button></div></div></div></div>
+</section>
+
+<section id="summary" class="hidden">
+<div class="card"><h2>団員別集計</h2><div id="summaryList"><div class="row card" style="margin:8px 0;padding:12px"><b>西濱</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>小澤</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>竹内</b><span><b>1回</b>　5555km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>粉川</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>山口</b><span><b>1回</b>　5555km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>藤本</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>萩</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>中田</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>西田</b><span><b>1回</b>　5555km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>伊丹</b><span><b>1回</b>　5555km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>高木</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>鈴木</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>加藤</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>舘</b><span><b>0回</b>　0km</span></div><div class="row card" style="margin:8px 0;padding:12px"><b>長沼</b><span><b>0回</b>　0km</span></div></div></div>
+<div class="card"><h3>団員を選んで履歴を見る</h3><select id="historyMember" onchange="renderHistory()"><option>西濱</option><option>小澤</option><option>竹内</option><option>粉川</option><option>山口</option><option>藤本</option><option>萩</option><option>中田</option><option>西田</option><option>伊丹</option><option>高木</option><option>鈴木</option><option>加藤</option><option>舘</option><option>長沼</option></select><div id="history"><div class="stats" style="margin-top:12px"><div class="stat"><b>0</b><span>配車回数</span></div><div class="stat"><b>0km</b><span>合計配車距離</span></div></div><div class="empty">配車履歴はありません</div></div></div>
+</section>
+
+<section id="members" class="hidden">
+<div class="card"><h2>団員管理</h2><label>団員名</label><input id="newMember" placeholder="例：山田 太郎"><button class="btn primary" onclick="addMember()">団員を追加</button></div>
+<div class="card"><div id="memberList"><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>西濱</b><button class="smallbtn danger" onclick="deleteMember(&#39;西濱&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>小澤</b><button class="smallbtn danger" onclick="deleteMember(&#39;小澤&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>竹内</b><button class="smallbtn danger" onclick="deleteMember(&#39;竹内&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>粉川</b><button class="smallbtn danger" onclick="deleteMember(&#39;粉川&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>山口</b><button class="smallbtn danger" onclick="deleteMember(&#39;山口&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>藤本</b><button class="smallbtn danger" onclick="deleteMember(&#39;藤本&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>萩</b><button class="smallbtn danger" onclick="deleteMember(&#39;萩&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>中田</b><button class="smallbtn danger" onclick="deleteMember(&#39;中田&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>西田</b><button class="smallbtn danger" onclick="deleteMember(&#39;西田&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>伊丹</b><button class="smallbtn danger" onclick="deleteMember(&#39;伊丹&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>高木</b><button class="smallbtn danger" onclick="deleteMember(&#39;高木&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>鈴木</b><button class="smallbtn danger" onclick="deleteMember(&#39;鈴木&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>加藤</b><button class="smallbtn danger" onclick="deleteMember(&#39;加藤&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>舘</b><button class="smallbtn danger" onclick="deleteMember(&#39;舘&#39;)">削除</button></div><div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>長沼</b><button class="smallbtn danger" onclick="deleteMember(&#39;長沼&#39;)">削除</button></div></div></div>
+</section>
+</main>
+
+<div id="modal" class="modal"><div class="sheet">
+<h2>配車記録を編集</h2>
+<input id="editId" type="hidden" value="1787355202447">
+<label>日付</label><input id="editDate" type="date">
+<label>行き先</label><input id="editPlace">
+<label>往復距離（km）</label><input id="editDistance" type="number" min="0" step="0.1">
+<label>配車担当者</label><div id="editChecks" class="members"><label class="member"><input type="checkbox" value="西濱"> 西濱</label><label class="member"><input type="checkbox" value="小澤"> 小澤</label><label class="member"><input type="checkbox" value="竹内" checked=""> 竹内</label><label class="member"><input type="checkbox" value="粉川"> 粉川</label><label class="member"><input type="checkbox" value="山口" checked=""> 山口</label><label class="member"><input type="checkbox" value="藤本"> 藤本</label><label class="member"><input type="checkbox" value="萩"> 萩</label><label class="member"><input type="checkbox" value="中田"> 中田</label><label class="member"><input type="checkbox" value="西田" checked=""> 西田</label><label class="member"><input type="checkbox" value="伊丹" checked=""> 伊丹</label><label class="member"><input type="checkbox" value="高木" checked=""> 高木</label><label class="member"><input type="checkbox" value="鈴木"> 鈴木</label><label class="member"><input type="checkbox" value="加藤"> 加藤</label><label class="member"><input type="checkbox" value="舘"> 舘</label><label class="member"><input type="checkbox" value="長沼"> 長沼</label></div>
+<div class="actions"><button class="edit" onclick="saveEdit()">変更を保存</button><button class="danger" onclick="closeModal()">キャンセル</button></div>
+</div></div>
+<div id="toast" class="toast" style="display: none;">変更を保存しました</div>
+
+<script>
+const KEY='minibasukei_v2';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"members":[],"trips":[]}');
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>{$('toast').style.display='none'},1800)}
+function show(id,btn){['register','summary','members'].forEach(x=>$(x).classList.toggle('hidden',x!==id));document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAll()}
+function addMember(){let n=$('newMember').value.trim();if(!n)return toast('団員名を入力してください');if(db.members.includes(n))return toast('同じ名前が登録されています');db.members.push(n);$('newMember').value='';save();toast('団員を追加しました')}
+function deleteMember(n){if(db.trips.some(t=>t.members.includes(n)))return toast('配車履歴があるため削除できません');if(confirm(n+' を削除しますか？')){db.members=db.members.filter(x=>x!==n);save()}}
+function checks(id,selected=[]){$(id).innerHTML=db.members.length?db.members.map(n=>`<label class="member"><input type="checkbox" value="${esc(n)}" ${selected.includes(n)?'checked':''}> ${esc(n)}</label>`).join(''):'<div class="empty" style="grid-column:1/-1">先に団員を追加してください</div>'}
+function selected(id){return [...$(id).querySelectorAll('input:checked')].map(x=>x.value)}
+function addTrip(){
+ let date=$('date').value,place=$('place').value.trim(),distance=Number($('distance').value),members=selected('memberChecks');
+ if(!date||!place||!(distance>0)||!members.length)return toast('日付・行き先・距離・団員を入力してください');
+ db.trips.push({id:Date.now(),date,place,distance,members});save();
+ $('place').value='';$('distance').value='';$('memberChecks').querySelectorAll('input').forEach(x=>x.checked=false);toast('まとめて登録しました')
+}
+function openEdit(id){
+ let t=db.trips.find(x=>x.id==id);if(!t)return;
+ $('editId').value=t.id;$('editDate').value=t.date;$('editPlace').value=t.place;$('editDistance').value=t.distance;checks('editChecks',t.members);$('modal').classList.add('open')
+}
+function closeModal(){$('modal').classList.remove('open')}
+function saveEdit(){
+ let id=Number($('editId').value),t=db.trips.find(x=>x.id===id);if(!t)return;
+ let date=$('editDate').value,place=$('editPlace').value.trim(),distance=Number($('editDistance').value),members=selected('editChecks');
+ if(!date||!place||!(distance>0)||!members.length)return toast('日付・行き先・距離・団員を入力してください');
+ t.date=date;t.place=place;t.distance=distance;t.members=members;save();closeModal();toast('変更を保存しました')
+}
+function deleteTrip(id){if(confirm('この配車記録を削除しますか？\\n削除すると集計からも差し引かれます。')){db.trips=db.trips.filter(x=>x.id!==id);save();toast('削除しました')}}
+function stats(n){let t=db.trips.filter(x=>x.members.includes(n));return {count:t.length,km:t.reduce((a,x)=>a+x.distance,0)}}
+function renderSummary(){
+ $('summaryList').innerHTML=db.members.length?db.members.map(n=>{let s=stats(n);return `<div class="row card" style="margin:8px 0;padding:12px"><b>${esc(n)}</b><span><b>${s.count}回</b>　${fmt(s.km)}km</span></div>`}).join(''):'<div class="empty">団員がいません</div>';
+ $('historyMember').innerHTML=db.members.length?db.members.map(n=>`<option>${esc(n)}</option>`).join(''):'<option>団員がいません</option>';renderHistory()
+}
+function renderHistory(){let n=$('historyMember').value;if(!n||!db.members.includes(n)){$('history').innerHTML='';return}let rows=db.trips.filter(x=>x.members.includes(n)).sort((a,b)=>b.date.localeCompare(a.date));let s=stats(n);
+ $('history').innerHTML=`<div class="stats" style="margin-top:12px"><div class="stat"><b>${s.count}</b><span>配車回数</span></div><div class="stat"><b>${fmt(s.km)}km</b><span>合計配車距離</span></div></div>`+(rows.length?rows.map(t=>`<div class="history"><div class="row"><b>${t.date.replaceAll('-','/')}</b><span class="pill">${fmt(t.distance)}km</span></div><div style="margin-top:5px">${esc(t.place)}</div><div class="muted">担当者：${t.members.map(esc).join('、')}</div><div class="actions"><button class="edit" onclick="openEdit(${t.id})">編集</button><button class="danger" onclick="deleteTrip(${t.id})">削除</button></div></div>`).join(''):'<div class="empty">配車履歴はありません</div>')}
+function renderRecent(){let rows=[...db.trips].sort((a,b)=>b.date.localeCompare(a.date));$('recent').innerHTML=rows.length?rows.map(t=>`<div class="history"><div class="row"><b>${t.date.replaceAll('-','/')}　${esc(t.place)}</b><span>${fmt(t.distance)}km</span></div><div class="muted">${t.members.map(esc).join('、')}</div><div class="actions"><button class="edit" onclick="openEdit(${t.id})">編集</button><button class="danger" onclick="deleteTrip(${t.id})">削除</button></div></div>`).join(''):'<div class="empty">まだ配車登録がありません</div>'}
+function renderMembers(){$('memberList').innerHTML=db.members.length?db.members.map(n=>`<div class="row" style="padding:10px 0;border-bottom:1px solid #eee"><b>${esc(n)}</b><button class="smallbtn danger" onclick="deleteMember('${js(n)}')">削除</button></div>`).join(''):'<div class="empty">団員がいません</div>'}
+function renderAll(){checks('memberChecks');renderSummary();renderRecent();renderMembers()}
+function fmt(n){return Number.isInteger(n)?n:n.toFixed(1)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function js(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+$('date').value=new Date().toISOString().slice(0,10);renderAll();
+</script>
+</body></html>
